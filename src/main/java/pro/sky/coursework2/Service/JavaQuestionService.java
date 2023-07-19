@@ -28,7 +28,7 @@ public class JavaQuestionService implements QuestionService {
 
     @Override
     public Question add(Question question) {
-        if (questions.equals(question)) {
+        if (questions.contains(question)) {
             throw new QuestionAlreadyAddedException("Question already added");
         }
         questions.add(question);
@@ -37,10 +37,11 @@ public class JavaQuestionService implements QuestionService {
 
     @Override
     public Question remove(Question question) {
-        if (questions.remove(question)) {
-            return question;
+        if (!questions.contains(question)) {
+            throw new QuestionNotFound("Question not found");
         }
-        throw new QuestionNotFound("Question not found");
+        questions.remove(question);
+        return question;
     }
 
     @Override
@@ -50,13 +51,10 @@ public class JavaQuestionService implements QuestionService {
 
     @Override
     public Question getRandomQuestion() {
-//        int size=questions.size();
-//        if(size>0){
-//            int randomIndex=new Random().nextInt(size);
-//
-//            return questions.get(randomIndex);
-//        }
+        if (!questions.isEmpty()) {
+            int randomIndex = new Random().nextInt(questions.size());
+            return questions.stream().skip(randomIndex).findFirst().orElse(null);
+        }
         return null;
     }
-
 }
