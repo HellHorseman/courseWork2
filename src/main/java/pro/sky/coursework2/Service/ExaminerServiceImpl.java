@@ -2,7 +2,7 @@ package pro.sky.coursework2.Service;
 
 import org.springframework.stereotype.Service;
 import pro.sky.coursework2.Entity.Question;
-import pro.sky.coursework2.Exception.MoreThanAvailableException;
+import pro.sky.coursework2.Exception.BadRequestException;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -21,7 +21,7 @@ public class ExaminerServiceImpl implements ExaminerService {
     @Override
     public Collection<Question> getQuestions(int amount) {
         if (amount > service.getAll().size()) {
-            throw new MoreThanAvailableException();
+            throw new BadRequestException("More than called");
         }
         return Stream.generate(service::getRandomQuestion)
                 .distinct()
