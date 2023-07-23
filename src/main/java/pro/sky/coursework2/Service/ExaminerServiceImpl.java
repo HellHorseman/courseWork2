@@ -11,21 +11,42 @@ import java.util.stream.Stream;
 @Service
 public class ExaminerServiceImpl implements ExaminerService {
 
-    private final JavaQuestionService service;
+    private final QuestionService javaQuestionService;
 
-    public ExaminerServiceImpl(JavaQuestionService service) {
-        this.service = service;
+    private final QuestionService mathQuestionService;
+
+    public ExaminerServiceImpl(QuestionService javaQuestionService,
+                               QuestionService mathQuestionService) {
+        this.javaQuestionService = javaQuestionService;
+        this.mathQuestionService = mathQuestionService;
     }
-
 
     @Override
     public Collection<Question> getQuestions(int amount) {
-        if (amount > service.getAll().size()) {
-            throw new BadRequestException("More than called");
+        if (amount < 1) {
+            throw new BadRequestException("Invalid call");
         }
-        return Stream.generate(service::getRandomQuestion)
-                .distinct()
-                .limit(amount)
-                .collect(Collectors.toSet());
+        Set<Question> uniqueQuestions = new HashSet<>();
+
+        Random random = new Random();
+        int javaQuestionsCount = random.nextInt(amount) + 1;
+        int mathQuestionsCount = amount - javaQuestionsCount;
+
+        for (int i = 0; i < javaQuestionsCount; i++) {
+            Question randomQuestion = javaQuestionService.getRandomQuestion();
+            if (randomQuestion != null) {
+                uniqueQuestions.add(randomQuestion);
+            }
+        }
+        for (int i = 0; i < mathQuestionsCount; i++) {
+            Question randomQuestion = mathQuestionService.getRandomQuestion();
+            if (randomQuestion != null) {
+                uniqueQuestions.add(randomQuestion);
+            }
+        }
+        if (uniqueQuestions.size() < amount) {
+            throw new BadRequestException();
+        }
+        return uniqueQuestions;
     }
 }

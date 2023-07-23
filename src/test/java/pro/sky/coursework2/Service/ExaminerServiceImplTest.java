@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import pro.sky.coursework2.Entity.Question;
 
@@ -19,33 +20,44 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 public class ExaminerServiceImplTest {
     @Mock
-    JavaQuestionService serviceMock;
+    QuestionService javaQuestionService;
+
+    @Mock
+    private QuestionService mathQuestionService;
 
     @InjectMocks
     ExaminerServiceImpl examinerService;
 
-    List<Question> questions = Arrays.asList(
+    List<Question> javaQuestions = Arrays.asList(
             new Question("Question1", "Answer1"),
             new Question("Question2", "Answer2"),
             new Question("Question3", "Answer3"));
 
+    List<Question> mathQuestions = Arrays.asList(
+            new Question("Que1", "Ans1"),
+            new Question("Que2", "Ans2"),
+            new Question("Que3", "Ans3"));
+
     @BeforeEach
     void setUp() {
-        when(serviceMock.getAll()).thenReturn(questions);
+        MockitoAnnotations.openMocks(this);
+        examinerService = new ExaminerServiceImpl(javaQuestionService, mathQuestionService);
     }
 
     @Test
     void testGetQuestions() {
         int amount = 3;
-        when(serviceMock.getRandomQuestion())
-                .thenReturn(questions.get(0))
-                .thenReturn(questions.get(1))
-                .thenReturn(questions.get(2));
+        when(javaQuestionService.getRandomQuestion())
+                .thenReturn(javaQuestions.get(0))
+                .thenReturn(javaQuestions.get(1))
+                .thenReturn(javaQuestions.get(2));
 
-        Collection<Question> result = examinerService.getQuestions(amount);
-        assertEquals(amount, result.size());
-        assertTrue(result.contains(questions.get(0)));
-        assertTrue(result.contains(questions.get(1)));
-        assertTrue(result.contains(questions.get(2)));
+        when(mathQuestionService.getRandomQuestion())
+                .thenReturn(javaQuestions.get(0))
+                .thenReturn(javaQuestions.get(1))
+                .thenReturn(javaQuestions.get(2));
+
+        Collection<Question> returnQuestion = examinerService.getQuestions(amount);
+        assertEquals(amount, returnQuestion.size());
     }
 }

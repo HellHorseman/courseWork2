@@ -2,59 +2,61 @@ package pro.sky.coursework2.Service;
 
 import org.springframework.stereotype.Service;
 import pro.sky.coursework2.Entity.Question;
+import pro.sky.coursework2.Exception.BadRequestException;
 import pro.sky.coursework2.Exception.QuestionAlreadyAddedException;
 import pro.sky.coursework2.Exception.QuestionNotFound;
+import pro.sky.coursework2.Repository.MathQuestionRepository;
+import pro.sky.coursework2.Repository.QuestionRepository;
 
 import java.util.*;
 
 @Service
 public class MathQuestionService implements QuestionService {
 
-    private final Set<Question> mathQuestions;
+    private final QuestionRepository questionRepository;
 
-    public MathQuestionService() {
-        this.mathQuestions = new HashSet<>();
+    public MathQuestionService(MathQuestionRepository mathQuestionRepository) {
+        this.questionRepository = mathQuestionRepository;
     }
 
     @Override
     public Question add(String question, String answer) {
         Question ques = new Question(question, answer);
-        if (!mathQuestions.contains(ques)) {
-            mathQuestions.add(ques);
-            return ques;
-        }
-        throw new QuestionAlreadyAddedException("Question already added");
+        questionRepository.add(ques);
+        return ques;
     }
 
     @Override
     public Question add(Question question) {
-        if (mathQuestions.contains(question)) {
-            throw new QuestionAlreadyAddedException("Question already added");
-        }
-        mathQuestions.add(question);
+        questionRepository.add(question);
         return question;
     }
 
     @Override
     public Question remove(Question question) {
-        if (!mathQuestions.contains(question)) {
-            throw new QuestionNotFound("Question not found");
+        Question removeQues = questionRepository.remove(question);
+        if (removeQues != null) {
+            return question;
         }
-        mathQuestions.remove(question);
-        return question;
+        throw new BadRequestException("Question not found");
     }
 
     @Override
     public Collection<Question> getAll() {
-        return Collections.unmodifiableSet(mathQuestions);
+        Collection<Question> getAllQuestionsCollections = questionRepository.getAll();
+        if (getAllQuestionsCollections != null) {
+            return Collections.unmodifiableCollection(getAllQuestionsCollections);
+        }
+        return Collections.emptyList();
     }
 
     @Override
     public Question getRandomQuestion() {
-        if (!mathQuestions.isEmpty()) {
-            int randomIndex = new Random().nextInt(mathQuestions.size());
-            return mathQuestions.stream().skip(randomIndex).findFirst().orElse(null);
+        Collection<Question> questions = questionRepository.getAll();
+        if (questions.isEmpty()) {
+            return null;
         }
-        return null;
+        int randomIndex = new Random().nextInt(questions.size());
+        return questions.stream().skip(randomIndex).findFirst().orElse(null);
     }
 }

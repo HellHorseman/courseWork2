@@ -4,12 +4,15 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import pro.sky.coursework2.Entity.Question;
+import pro.sky.coursework2.Repository.JavaQuestionRepository;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ExtendWith(MockitoExtension.class)
 public class JavaQuestionServiceTest {
-    private JavaQuestionService serviceMock = new JavaQuestionService();
+
+    JavaQuestionRepository questionRepository = new JavaQuestionRepository();
+    private JavaQuestionService serviceMock = new JavaQuestionService(questionRepository);
 
     @Test
     void add() {

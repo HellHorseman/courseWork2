@@ -2,55 +2,58 @@ package pro.sky.coursework2.Service;
 
 import org.springframework.stereotype.Service;
 import pro.sky.coursework2.Entity.Question;
+import pro.sky.coursework2.Exception.BadRequestException;
 import pro.sky.coursework2.Exception.QuestionAlreadyAddedException;
 import pro.sky.coursework2.Exception.QuestionNotFound;
+import pro.sky.coursework2.Repository.JavaQuestionRepository;
+import pro.sky.coursework2.Repository.QuestionRepository;
 
 import java.util.*;
 
 @Service
 public class JavaQuestionService implements QuestionService {
 
-    private final Set<Question> questions;
+   private final QuestionRepository questionRepository;
 
-    public JavaQuestionService() {
-        this.questions = new HashSet<>();
+    public JavaQuestionService(JavaQuestionRepository javaQuestionRepository) {
+        this.questionRepository = javaQuestionRepository;
     }
 
     @Override
     public Question add(String question, String answer) {
         Question ques = new Question(question, answer);
-        if (!questions.contains(ques)) {
-            questions.add(ques);
+        questionRepository.add(ques);
             return ques;
         }
-        throw new QuestionAlreadyAddedException("Question already added");
-    }
+
 
     @Override
     public Question add(Question question) {
-        if (questions.contains(question)) {
-            throw new QuestionAlreadyAddedException("Question already added");
-        }
-        questions.add(question);
+       questionRepository.add(question);
         return question;
     }
 
     @Override
     public Question remove(Question question) {
-        if (!questions.contains(question)) {
-            throw new QuestionNotFound("Question not found");
+        Question removeQues = questionRepository.remove(question);
+        if (removeQues != null) {
+            return question;
         }
-        questions.remove(question);
-        return question;
+        throw new BadRequestException("Question not found");
     }
 
     @Override
     public Collection<Question> getAll() {
-        return Collections.unmodifiableSet(questions);
+        Collection<Question> getAllQuestionsCollections = questionRepository.getAll();
+        if (getAllQuestionsCollections != null) {
+            return Collections.unmodifiableCollection(getAllQuestionsCollections);
+        }
+        return Collections.emptyList();
     }
 
     @Override
     public Question getRandomQuestion() {
+        Collection<Question> questions = questionRepository.getAll();
         if (!questions.isEmpty()) {
             int randomIndex = new Random().nextInt(questions.size());
             return questions.stream().skip(randomIndex).findFirst().orElse(null);
