@@ -11,14 +11,10 @@ import java.util.stream.Stream;
 @Service
 public class ExaminerServiceImpl implements ExaminerService {
 
-    private final QuestionService javaQuestionService;
+    private Set<QuestionService> questionServices;
 
-    private final QuestionService mathQuestionService;
-
-    public ExaminerServiceImpl(QuestionService javaQuestionService,
-                               QuestionService mathQuestionService) {
-        this.javaQuestionService = javaQuestionService;
-        this.mathQuestionService = mathQuestionService;
+    public ExaminerServiceImpl(Set<QuestionService> questionServices) {
+        this.questionServices = new HashSet<>();
     }
 
     @Override
@@ -26,27 +22,25 @@ public class ExaminerServiceImpl implements ExaminerService {
         if (amount < 1) {
             throw new BadRequestException("Invalid call");
         }
-        Set<Question> uniqueQuestions = new HashSet<>();
-
+        Set<Question> requestedQuestions = new HashSet<>();
         Random random = new Random();
-        int javaQuestionsCount = random.nextInt(amount) + 1;
-        int mathQuestionsCount = amount - javaQuestionsCount;
+        for (QuestionService questionService : questionServices) {
+            int questionsCount = random.nextInt(amount) + 1;
 
-        for (int i = 0; i < javaQuestionsCount; i++) {
-            Question randomQuestion = javaQuestionService.getRandomQuestion();
-            if (randomQuestion != null) {
-                uniqueQuestions.add(randomQuestion);
+            for (int i = 0; i < questionsCount; i++) {
+                Question randomQuestion = questionService.getRandomQuestion();
+                if (randomQuestion != null) {
+                    requestedQuestions.add(randomQuestion);
+                }
+            }
+            amount -= questionsCount;
+            if (amount <= 0) {
+                break;
             }
         }
-        for (int i = 0; i < mathQuestionsCount; i++) {
-            Question randomQuestion = mathQuestionService.getRandomQuestion();
-            if (randomQuestion != null) {
-                uniqueQuestions.add(randomQuestion);
-            }
+        if (requestedQuestions.size() < amount) {
+            throw new BadRequestException("Over than list contains");
         }
-        if (uniqueQuestions.size() < amount) {
-            throw new BadRequestException();
-        }
-        return uniqueQuestions;
+        return requestedQuestions;
     }
 }

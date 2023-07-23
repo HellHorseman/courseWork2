@@ -9,9 +9,7 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import pro.sky.coursework2.Entity.Question;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -40,8 +38,10 @@ public class ExaminerServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
-        examinerService = new ExaminerServiceImpl(javaQuestionService, mathQuestionService);
+        Set<QuestionService> questionServices = new HashSet<>();
+        questionServices.add(javaQuestionService);
+        questionServices.add(mathQuestionService);
+        examinerService = new ExaminerServiceImpl(questionServices);
     }
 
     @Test

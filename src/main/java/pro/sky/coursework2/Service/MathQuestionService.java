@@ -3,9 +3,7 @@ package pro.sky.coursework2.Service;
 import org.springframework.stereotype.Service;
 import pro.sky.coursework2.Entity.Question;
 import pro.sky.coursework2.Exception.BadRequestException;
-import pro.sky.coursework2.Exception.QuestionAlreadyAddedException;
-import pro.sky.coursework2.Exception.QuestionNotFound;
-import pro.sky.coursework2.Repository.MathQuestionRepository;
+import pro.sky.coursework2.Exception.MethodNotAllowedException;
 import pro.sky.coursework2.Repository.QuestionRepository;
 
 import java.util.*;
@@ -13,50 +11,54 @@ import java.util.*;
 @Service
 public class MathQuestionService implements QuestionService {
 
-    private final QuestionRepository questionRepository;
-
-    public MathQuestionService(MathQuestionRepository mathQuestionRepository) {
-        this.questionRepository = mathQuestionRepository;
-    }
-
     @Override
     public Question add(String question, String answer) {
-        Question ques = new Question(question, answer);
-        questionRepository.add(ques);
-        return ques;
+        throw new MethodNotAllowedException();
     }
 
     @Override
     public Question add(Question question) {
-        questionRepository.add(question);
-        return question;
+        throw new MethodNotAllowedException();
     }
 
     @Override
     public Question remove(Question question) {
-        Question removeQues = questionRepository.remove(question);
-        if (removeQues != null) {
-            return question;
-        }
-        throw new BadRequestException("Question not found");
+        throw new MethodNotAllowedException();
     }
 
     @Override
     public Collection<Question> getAll() {
-        Collection<Question> getAllQuestionsCollections = questionRepository.getAll();
-        if (getAllQuestionsCollections != null) {
-            return Collections.unmodifiableCollection(getAllQuestionsCollections);
-        }
-        return Collections.emptyList();
+        throw new MethodNotAllowedException();
     }
 
     @Override
     public Question getRandomQuestion() {
-        Collection<Question> questions = questionRepository.getAll();
-        if (questions.isEmpty()) {
-            return null;
+        Random random = new Random();
+        int number1 = random.nextInt(20);
+        int number2 = random.nextInt(20);
+        int operator = random.nextInt(4);
+        String question;
+        int answer;
+        switch (operator) {
+            case 0:
+                question = number1 + " + " + number2 + " = ?";
+                answer = number1 + number2;
+                break;
+            case 1:
+                question = number1 + " - " + number2 + " = ?";
+                answer = number1 - number2;
+                break;
+            case 2:
+                question = number1 + " * " + number2 + " = ?";
+                answer = number1 * number2;
+                break;
+            case 3:
+                question = number1 * number2 + " / " + number2 + " = ?";
+                answer = number1;
+                break;
+            default:
+                throw new RuntimeException("Такого оператора нет.");
         }
-        int randomIndex = new Random().nextInt(questions.size());
-        return questions.stream().skip(randomIndex).findFirst().orElse(null);
+        return new Question(question, String.valueOf(answer));
     }
 }
